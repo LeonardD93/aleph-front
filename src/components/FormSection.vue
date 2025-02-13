@@ -1,23 +1,23 @@
 <template>
   <div class="container mx-auto my-16 z-1 px-6 md:px-24">
-    <form class="bg-white p-12 rounded-3xl shadow-form mx-auto text-gray-900 max-w-4xl">
-      <h3 class="text-3xl  text-center mb-10">
+    <form @submit.prevent="submitForm" class="bg-white p-12 rounded-3xl shadow-form mx-auto text-gray-900 max-w-4xl">
+      <h3 class="text-3xl text-center mb-10">
         Raccontaci le tue esigenze: ottieni il tuo preventivo
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <input type="text" placeholder="Nome"
+        <input v-model="form.first_name" type="text" placeholder="Nome"
           class="border p-5 rounded-lg w-full h-14 bg-gray-200 placeholder:text-dark focus:outline-none" />
-        <input type="text" placeholder="Cognome"
+        <input v-model="form.last_name" type="text" placeholder="Cognome"
           class="border p-5 rounded-lg w-full h-14 bg-gray-200 placeholder:text-dark focus:outline-none" />
-        <input type="email" placeholder="Email"
+        <input v-model="form.email" type="email" placeholder="Email"
           class="border p-5 rounded-lg w-full h-14 bg-gray-200 placeholder:text-dark focus:outline-none" />
-        <input type="tel" placeholder="Recapito telefonico"
+        <input v-model="form.phone" type="tel" placeholder="Recapito telefonico"
           class="border p-5 rounded-lg w-full h-14 bg-gray-200 placeholder:text-dark focus:outline-none" />
       </div>
-      <textarea placeholder="Messaggio"
+      <textarea v-model="form.message" placeholder="Messaggio"
         class="border p-5 rounded-lg w-full h-32 mb-8 bg-gray-200 placeholder:text-dark focus:outline-none"></textarea>
       <div class="flex items-center mb-6">
-        <input type="checkbox" id="privacy" class="mr-3 h-5 w-5" />
+        <input v-model="form.privacy" type="checkbox" id="privacy" class="mr-3 h-5 w-5" />
         <label for="privacy" class="text-sm">
           Autorizzo al trattamento dei miei dati personali ai sensi della <a class="text-secondary" href="#">normativa
             sulla privacy (UE 2016/679)</a>
@@ -37,3 +37,57 @@
     </form>
   </div>
 </template>
+
+<script>
+import { ref } from 'vue';
+import axios from 'axios';
+
+export default {
+  setup() {
+    const baseUrl = 'http://localhost:8080';
+
+    const form = ref({
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone: '',
+      message: '',
+      privacy: false
+    });
+
+    const submitForm = async () => {
+      if (!form.value.privacy) {
+        alert('Per favore, accetta la normativa sulla privacy.');
+        return;
+      }
+
+      try {
+        const response = await axios.post(`${baseUrl}/api/contacts`, form.value);
+        alert('Modulo inviato con successo!');
+        resetForm();
+      } catch (error) {
+        console.error(error);
+        alert('Si è verificato un errore durante l\'invio del modulo.');
+      }
+    };
+
+    const resetForm = () => {
+      form.value = {
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        message: '',
+        privacy: false
+      };
+    };
+
+    return {
+      baseUrl,
+      form,
+      submitForm,
+      resetForm
+    };
+  }
+};
+</script>
